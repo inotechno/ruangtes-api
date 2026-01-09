@@ -98,25 +98,35 @@ jobs:
               # This should be handled by git clone, but just in case
             fi
             
+            # Detect docker compose command (V2 uses 'docker compose', V1 uses 'docker-compose')
+            if docker compose version > /dev/null 2>&1; then
+              DOCKER_COMPOSE="docker compose"
+            elif docker-compose version > /dev/null 2>&1; then
+              DOCKER_COMPOSE="docker-compose"
+            else
+              echo "❌ Docker Compose not found"
+              exit 1
+            fi
+            
             # Stop and remove old containers
-            docker-compose -f docker-compose.prod.yml down || true
+            $DOCKER_COMPOSE -f docker-compose.prod.yml down || true
             
             # Start new containers
-            docker-compose -f docker-compose.prod.yml up -d
+            $DOCKER_COMPOSE -f docker-compose.prod.yml up -d
             
             # Wait for services to be ready
             sleep 10
             
             # Run migrations
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan migrate --force || true
+            $DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan migrate --force || true
             
             # Clear and cache config
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan config:cache || true
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan route:cache || true
-            docker-compose -f docker-compose.prod.yml exec -T app php artisan view:cache || true
+            $DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan config:cache || true
+            $DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan route:cache || true
+            $DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan view:cache || true
             
             # Restart queue and scheduler
-            docker-compose -f docker-compose.prod.yml restart queue scheduler || true
+            $DOCKER_COMPOSE -f docker-compose.prod.yml restart queue scheduler || true
             
             # Clean up old images
             docker image prune -af --filter "until=168h" || true

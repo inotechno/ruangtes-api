@@ -4,6 +4,19 @@ set -e
 
 echo "🚀 Deploying RuangTes API..."
 
+# Check if user has docker permission
+if ! docker ps > /dev/null 2>&1; then
+    echo "❌ Docker permission denied. Trying with sudo..."
+    echo "💡 To fix permanently, run: sudo usermod -aG docker \$USER && newgrp docker"
+    
+    # Check if script is run with sudo
+    if [ "$EUID" -ne 0 ]; then
+        echo "⚠️  Please run with sudo or add user to docker group"
+        echo "   Run: sudo ./deploy/deploy.sh"
+        exit 1
+    fi
+fi
+
 cd /opt/ruangtes-api
 
 # Get AWS Account ID and ECR Registry
@@ -21,13 +34,23 @@ echo "⬇️  Pulling latest image..."
 docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest || echo "Image not found in ECR, will build locally"
 docker tag $ECR_REGISTRY/$ECR_REPOSITORY:latest ruangtes-app:latest || docker build -t ruangtes-app:latest .
 
+# Detect docker compose command (V2 uses 'docker compose', V1 uses 'docker-compose')
+if docker compose version > /dev/null 2>&1; then
+    DOCKER_COMPOSE="docker compose"
+elif docker-compose version > /dev/null 2>&1; then
+    DOCKER_COMPOSE="docker-compose"
+else
+    echo "❌ Docker Compose not found. Please install Docker Compose."
+    exit 1
+fi
+
 # Stop and remove old containers
 echo "🛑 Stopping old containers..."
-docker-compose -f docker-compose.prod.yml down || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml down || true
 
 # Start new containers
 echo "🚀 Starting new containers..."
-docker-compose -f docker-compose.prod.yml up -d
+$DOCKER_COMPOSE -f docker-compose.prod.yml up -d
 
 # Wait for services to be ready
 echo "⏳ Waiting for services to be ready..."
@@ -35,17 +58,17 @@ sleep 15
 
 # Run migrations
 echo "🗄️  Running migrations..."
-docker-compose -f docker-compose.prod.yml exec -T app php artisan migrate --force || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan migrate --force || true
 
 # Clear and cache config
 echo "⚙️  Caching configuration..."
-docker-compose -f docker-compose.prod.yml exec -T app php artisan config:cache || true
-docker-compose -f docker-compose.prod.yml exec -T app php artisan route:cache || true
-docker-compose -f docker-compose.prod.yml exec -T app php artisan view:cache || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan config:cache || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan route:cache || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan view:cache || true
 
 # Restart queue and scheduler
 echo "🔄 Restarting queue and scheduler..."
-docker-compose -f docker-compose.prod.yml restart queue scheduler || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml restart queue scheduler || true
 
 # Clean up old images
 echo "🧹 Cleaning up old images..."

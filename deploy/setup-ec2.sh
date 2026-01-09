@@ -243,6 +243,14 @@ else
     echo -e "${YELLOW}UFW not found, skipping firewall setup${NC}"
 fi
 
+# Setup Docker permissions for user
+echo -e "${YELLOW}Setting up Docker permissions...${NC}"
+if [ -n "$SUDO_USER" ]; then
+    usermod -aG docker $SUDO_USER
+    echo -e "${GREEN}User $SUDO_USER added to docker group${NC}"
+    echo -e "${YELLOW}User needs to logout and login again for changes to take effect${NC}"
+fi
+
 # Create deploy script
 DEPLOY_SCRIPT="$APP_DIR/deploy.sh"
 if [ ! -f "$DEPLOY_SCRIPT" ]; then
@@ -253,6 +261,16 @@ set -e
 
 cd /opt/ruangtes-api
 
+# Detect docker compose command (V2 uses 'docker compose', V1 uses 'docker-compose')
+if docker compose version > /dev/null 2>&1; then
+    DOCKER_COMPOSE="docker compose"
+elif docker-compose version > /dev/null 2>&1; then
+    DOCKER_COMPOSE="docker-compose"
+else
+    echo "❌ Docker Compose not found. Please install Docker Compose."
+    exit 1
+fi
+
 # Login to ECR
 aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query Account --output text).dkr.ecr.ap-southeast-1.amazonaws.com
 
@@ -260,21 +278,21 @@ aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS
 docker pull ruangtes-app:latest
 
 # Stop and remove old containers
-docker-compose -f docker-compose.prod.yml down
+$DOCKER_COMPOSE -f docker-compose.prod.yml down
 
 # Start new containers
-docker-compose -f docker-compose.prod.yml up -d
+$DOCKER_COMPOSE -f docker-compose.prod.yml up -d
 
 # Run migrations
-docker-compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan migrate --force
 
 # Clear and cache config
-docker-compose -f docker-compose.prod.yml exec -T app php artisan config:cache
-docker-compose -f docker-compose.prod.yml exec -T app php artisan route:cache
-docker-compose -f docker-compose.prod.yml exec -T app php artisan view:cache
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan config:cache
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan route:cache
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan view:cache
 
 # Restart queue and scheduler
-docker-compose -f docker-compose.prod.yml restart queue scheduler
+$DOCKER_COMPOSE -f docker-compose.prod.yml restart queue scheduler
 
 # Clean up old images
 docker image prune -af --filter "until=168h"

@@ -94,9 +94,43 @@ cat ~/.ssh/id_rsa
 ### 3. Clone Repository to EC2
 
 ```bash
+# Jika direktori sudah ada, hapus dulu
+sudo rm -rf /opt/ruangtes-api
+
+# Clone repository
+sudo git clone https://github.com/inotechno/ruangtes-api.git /opt/ruangtes-api
+
+# Set ownership
+sudo chown -R $USER:$USER /opt/ruangtes-api
+
+# Masuk ke direktori
 cd /opt/ruangtes-api
-git clone https://github.com/your-username/ruangtes-api.git .
 ```
+
+**Note:** Jika mendapat error "destination path already exists", lihat `deploy/FIX_CLONE_ISSUE.md` untuk solusi lengkap.
+
+### 3.5. Fix Docker Permissions
+
+Setelah setup, pastikan user memiliki permission untuk Docker:
+
+```bash
+# Tambahkan user ke docker group
+sudo usermod -aG docker $USER
+
+# Logout dan login kembali, atau:
+newgrp docker
+
+# Verify
+docker ps
+```
+
+Atau jalankan script helper:
+```bash
+cd /opt/ruangtes-api
+./deploy/setup-docker-permissions.sh
+```
+
+**Note:** Setelah menambahkan user ke grup, Anda perlu logout dan login kembali.
 
 ### 4. Configure Environment Variables
 

@@ -42,9 +42,20 @@ aws ecr create-repository \
 ## Step 4: Clone Repository
 
 ```bash
+# Jika direktori sudah ada, hapus dulu
+sudo rm -rf /opt/ruangtes-api
+
+# Clone repository
+sudo git clone https://github.com/inotechno/ruangtes-api.git /opt/ruangtes-api
+
+# Set ownership
+sudo chown -R $USER:$USER /opt/ruangtes-api
+
+# Masuk ke direktori
 cd /opt/ruangtes-api
-git clone https://github.com/your-username/ruangtes-api.git .
 ```
+
+**Note:** Jika mendapat error "destination path already exists", lihat `deploy/FIX_CLONE_ISSUE.md` untuk solusi lengkap.
 
 ## Step 5: Configure Environment
 
@@ -80,6 +91,28 @@ sudo systemctl reload nginx
 ```bash
 sudo certbot --nginx -d your-domain.com -d www.your-domain.com
 ```
+
+## Step 7.5: Fix Docker Permissions
+
+Jika mendapat error "permission denied" saat menjalankan docker commands:
+
+```bash
+# Tambahkan user ke docker group
+sudo usermod -aG docker $USER
+
+# Logout dan login kembali, atau:
+newgrp docker
+
+# Verify
+docker ps
+```
+
+Atau jalankan script helper:
+```bash
+./deploy/setup-docker-permissions.sh
+```
+
+**Note:** Setelah menambahkan user ke grup, Anda perlu logout dan login kembali.
 
 ## Step 8: Initial Deployment
 
