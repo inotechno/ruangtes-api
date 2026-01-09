@@ -54,6 +54,10 @@ RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache || true
 
+    # Configure PHP-FPM
+RUN sed -i 's/^listen = .*/listen = 0.0.0.0:9000/' /usr/local/etc/php-fpm.d/www.conf \
+&& sed -i 's/^;listen.allowed_clients = .*/listen.allowed_clients =/' /usr/local/etc/php-fpm.d/www.conf
+
 # Change current user to www-data
 USER www-data
 
