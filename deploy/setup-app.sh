@@ -42,10 +42,15 @@ else
 fi
 echo ""
 
-# 4. Run migrations
-echo "4️⃣  Running migrations..."
-php artisan migrate --force || true
-echo "✅ Migrations completed"
+# 4. Run migrations (only if there are pending migrations)
+echo "4️⃣  Checking for pending migrations..."
+if php artisan migrate:status | grep -q "Pending"; then
+    echo "   Found pending migrations, running migrate..."
+    php artisan migrate --force || true
+    echo "✅ Migrations completed"
+else
+    echo "   No pending migrations, skipping..."
+fi
 echo ""
 
 # 5. Create storage link

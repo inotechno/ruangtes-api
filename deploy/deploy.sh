@@ -16,9 +16,14 @@ git pull origin main || git pull origin master
 echo "📦 Installing dependencies..."
 composer install --no-dev --optimize-autoloader --no-interaction
 
-# Run migrations
-echo "🗄️  Running migrations..."
-php artisan migrate --force || true
+# Run migrations (only if there are pending migrations)
+echo "🗄️  Checking for pending migrations..."
+if php artisan migrate:status | grep -q "Pending"; then
+    echo "   Found pending migrations, running migrate..."
+    php artisan migrate --force || true
+else
+    echo "   No pending migrations, skipping..."
+fi
 
 # Clear and cache config
 echo "⚙️  Caching configuration..."
