@@ -58,6 +58,9 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT || 22 }}
+          timeout: 60s
+          command_timeout: 10m
+          debug: true
           script: |
             cd /opt/ruangtes-api
             
