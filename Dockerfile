@@ -46,6 +46,14 @@ WORKDIR /var/www/html
 # Copy existing application directory permissions
 COPY --chown=www-data:www-data . /var/www/html
 
+# Install composer dependencies (will be overridden by volume mount, but needed for initial build)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist || true
+
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod -R 755 /var/www/html && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache || true
+
 # Change current user to www-data
 USER www-data
 
