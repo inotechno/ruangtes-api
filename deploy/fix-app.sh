@@ -21,8 +21,10 @@ echo ""
 
 # 1. Fix storage permissions on host
 echo "1️⃣  Fixing storage permissions on host..."
-sudo chown -R $USER:$USER storage bootstrap/cache vendor 2>/dev/null || true
+sudo chown -R $USER:33 storage bootstrap/cache vendor 2>/dev/null || true
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+sudo chown $USER:$USER .env 2>/dev/null || true
+chmod 644 .env 2>/dev/null || true
 echo "✅ Storage permissions fixed"
 echo ""
 
@@ -42,7 +44,12 @@ echo ""
 echo "3️⃣  Checking APP_KEY..."
 if ! grep -q "APP_KEY=base64:" .env 2>/dev/null; then
     echo "   Generating APP_KEY..."
-    $DOCKER_COMPOSE -f docker-compose.prod.yml run --rm app php artisan key:generate --force
+    # Temporarily make .env writable
+    sudo chmod 666 .env 2>/dev/null || true
+    $DOCKER_COMPOSE -f docker-compose.prod.yml run --rm -u root app php artisan key:generate --force
+    # Restore .env permissions
+    sudo chown $USER:$USER .env 2>/dev/null || true
+    chmod 644 .env 2>/dev/null || true
     echo "✅ APP_KEY generated"
 else
     echo "✅ APP_KEY already set"
@@ -51,13 +58,13 @@ echo ""
 
 # 4. Clear and cache config
 echo "4️⃣  Clearing and caching configuration..."
-$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan config:clear || true
-$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan cache:clear || true
-$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan route:clear || true
-$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan view:clear || true
-$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan config:cache || true
-$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan route:cache || true
-$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T app php artisan view:cache || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T -u root app php artisan config:clear || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T -u root app php artisan cache:clear || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T -u root app php artisan route:clear || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T -u root app php artisan view:clear || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T -u root app php artisan config:cache || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T -u root app php artisan route:cache || true
+$DOCKER_COMPOSE -f docker-compose.prod.yml exec -T -u root app php artisan view:cache || true
 echo "✅ Configuration cached"
 echo ""
 
