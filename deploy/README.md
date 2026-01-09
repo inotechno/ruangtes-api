@@ -1,6 +1,6 @@
-# Deployment Guide - RuangTes API to EC2
+# Deployment Guide - RuangTes API to EC2 (No Docker)
 
-Panduan lengkap untuk deploy RuangTes API ke EC2 menggunakan Docker dan GitHub Actions.
+Panduan lengkap untuk deploy RuangTes API ke EC2 menggunakan instalasi langsung di server (tanpa Docker) dengan GitHub Actions.
 
 ## Prerequisites
 
@@ -10,11 +10,7 @@ Panduan lengkap untuk deploy RuangTes API ke EC2 menggunakan Docker dan GitHub A
    - Recommended: 4 vCPU, 8GB RAM
    - Security Group: Open ports 22 (SSH), 80 (HTTP), 443 (HTTPS)
 
-2. **AWS Account**
-   - ECR (Elastic Container Registry) untuk menyimpan Docker images
-   - IAM user dengan permissions untuk ECR
-
-3. **GitHub Repository**
+2. **GitHub Repository**
    - Repository dengan kode aplikasi
    - GitHub Secrets untuk deployment
 
@@ -28,56 +24,50 @@ SSH ke EC2 instance dan jalankan setup script:
 
 ```bash
 # Download setup script
-curl -O https://raw.githubusercontent.com/your-repo/ruangtes-api/main/deploy/setup-ec2.sh
+curl -O https://raw.githubusercontent.com/inotechno/ruangtes-api/main/deploy/setup-server.sh
 
 # Make executable
-chmod +x setup-ec2.sh
+chmod +x setup-server.sh
 
 # Run as root
-sudo ./setup-ec2.sh
+sudo ./setup-server.sh
 ```
 
 Script ini akan:
-- Install Docker & Docker Compose
-- Install AWS CLI
+- Install PHP 8.2 FPM dengan semua extensions yang diperlukan
+- Install PostgreSQL
+- Install Redis
 - Install Nginx
+- Install Composer
+- Install Node.js & npm
 - Install Certbot
-- Setup firewall
-- Create application directory
+- Install Supervisor (untuk queue workers & scheduler)
+- Setup PostgreSQL database
 - Create Nginx configuration
+- Create Supervisor configurations
+- Setup firewall
 
-#### B. Configure AWS CLI
+#### B. Database Setup
 
-```bash
-aws configure
-# Enter your AWS Access Key ID
-# Enter your AWS Secret Access Key
-# Enter default region (e.g., ap-southeast-1)
-# Enter default output format (json)
-```
-
-#### C. Create ECR Repository
+Setup script akan otomatis create database. Catat password yang di-generate, atau buat password sendiri:
 
 ```bash
-aws ecr create-repository \
-    --repository-name ruangtes-api \
-    --region ap-southeast-1 \
-    --image-scanning-configuration scanOnPush=true \
-    --image-tag-mutability MUTABLE
+# Create database manually (optional)
+sudo -u postgres psql
+CREATE USER ruangtes WITH PASSWORD 'your_secure_password';
+CREATE DATABASE ruangtes OWNER ruangtes;
+GRANT ALL PRIVILEGES ON DATABASE ruangtes TO ruangtes;
+\q
 ```
-
-Catat ECR repository URI yang dihasilkan.
 
 ### 2. Setup GitHub Secrets
 
 Di GitHub repository, tambahkan secrets berikut:
 
-1. **AWS_ACCESS_KEY_ID** - AWS Access Key ID
-2. **AWS_SECRET_ACCESS_KEY** - AWS Secret Access Key
-3. **EC2_HOST** - EC2 Public IP atau Domain
-4. **EC2_USERNAME** - SSH username (biasanya `ubuntu` atau `ec2-user`)
-5. **EC2_SSH_KEY** - Private SSH key untuk EC2
-6. **EC2_PORT** - SSH port (default: 22)
+1. **EC2_HOST** - EC2 Public IP atau Domain
+2. **EC2_USERNAME** - SSH username (biasanya `ubuntu`)
+3. **EC2_SSH_KEY** - Private SSH key untuk EC2
+4. **EC2_PORT** - SSH port (default: 22)
 
 **Cara mendapatkan SSH key:**
 ```bash
@@ -94,43 +84,9 @@ cat ~/.ssh/id_rsa
 ### 3. Clone Repository to EC2
 
 ```bash
-# Jika direktori sudah ada, hapus dulu
-sudo rm -rf /opt/ruangtes-api
-
-# Clone repository
-sudo git clone https://github.com/inotechno/ruangtes-api.git /opt/ruangtes-api
-
-# Set ownership
-sudo chown -R $USER:$USER /opt/ruangtes-api
-
-# Masuk ke direktori
 cd /opt/ruangtes-api
+git clone https://github.com/inotechno/ruangtes-api.git .
 ```
-
-**Note:** Jika mendapat error "destination path already exists", lihat `deploy/FIX_CLONE_ISSUE.md` untuk solusi lengkap.
-
-### 3.5. Fix Docker Permissions
-
-Setelah setup, pastikan user memiliki permission untuk Docker:
-
-```bash
-# Tambahkan user ke docker group
-sudo usermod -aG docker $USER
-
-# Logout dan login kembali, atau:
-newgrp docker
-
-# Verify
-docker ps
-```
-
-Atau jalankan script helper:
-```bash
-cd /opt/ruangtes-api
-./deploy/setup-docker-permissions.sh
-```
-
-**Note:** Setelah menambahkan user ke grup, Anda perlu logout dan login kembali.
 
 ### 4. Configure Environment Variables
 
@@ -146,17 +102,17 @@ Update konfigurasi berikut:
 APP_NAME=RuangTes
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://your-domain.com
+APP_URL=https://api.ruangtes.web.id
 
 DB_CONNECTION=pgsql
-DB_HOST=postgres
+DB_HOST=127.0.0.1
 DB_PORT=5432
 DB_DATABASE=ruangtes
 DB_USERNAME=ruangtes
 DB_PASSWORD=your_secure_password
 
-REDIS_HOST=redis
-REDIS_PASSWORD=your_redis_password
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
 REDIS_PORT=6379
 
 CACHE_STORE=redis
@@ -188,7 +144,7 @@ sudo nano /etc/nginx/sites-available/ruangtes-api
 Update `server_name` dengan domain Anda:
 
 ```nginx
-server_name your-domain.com www.your-domain.com;
+server_name api.ruangtes.web.id www.api.ruangtes.web.id;
 ```
 
 Test dan reload Nginx:
@@ -201,7 +157,7 @@ sudo systemctl reload nginx
 ### 6. Setup SSL with Certbot
 
 ```bash
-sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+sudo certbot --nginx -d api.ruangtes.web.id -d www.api.ruangtes.web.id
 ```
 
 Certbot akan:
@@ -209,62 +165,62 @@ Certbot akan:
 - Update Nginx configuration untuk HTTPS
 - Setup auto-renewal
 
-### 7. Initial Deployment
-
-#### Option A: Manual Deployment (First Time)
+### 7. Initial Application Setup
 
 ```bash
 cd /opt/ruangtes-api
 
-# Build and start containers
-docker-compose -f docker-compose.prod.yml up -d --build
+# Install dependencies
+composer install --no-dev --optimize-autoloader
+
+# Install Node.js dependencies (if needed)
+npm install
+npm run build
 
 # Generate application key
-docker-compose -f docker-compose.prod.yml exec app php artisan key:generate
+php artisan key:generate
 
 # Run migrations
-docker-compose -f docker-compose.prod.yml exec app php artisan migrate --force
+php artisan migrate --force
 
 # Seed database (optional)
-docker-compose -f docker-compose.prod.yml exec app php artisan db:seed
+php artisan db:seed
 
-# Setup storage link
-docker-compose -f docker-compose.prod.yml exec app php artisan storage:link
+# Create storage link
+php artisan storage:link
 
 # Cache configuration
-docker-compose -f docker-compose.prod.yml exec app php artisan config:cache
-docker-compose -f docker-compose.prod.yml exec app php artisan route:cache
-docker-compose -f docker-compose.prod.yml exec app php artisan view:cache
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Fix permissions
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
 ```
-
-#### Option B: Using GitHub Actions
-
-Push code ke branch `main` atau `master`, GitHub Actions akan otomatis:
-1. Run tests
-2. Build Docker image
-3. Push to ECR
-4. Deploy to EC2
 
 ### 8. Verify Deployment
 
 ```bash
-# Check containers status
-docker-compose -f docker-compose.prod.yml ps
+# Check services status
+systemctl status php8.2-fpm
+systemctl status nginx
+systemctl status postgresql
+systemctl status redis-server
+systemctl status supervisor
 
-# Check logs
-docker-compose -f docker-compose.prod.yml logs -f app
+# Check queue workers
+sudo supervisorctl status
 
 # Test API
-curl https://your-domain.com/api/health
+curl https://api.ruangtes.web.id/health
 ```
 
 ## GitHub Actions Workflow
 
 Workflow akan:
 1. **Test** - Run PHPUnit/Pest tests
-2. **Build** - Build Docker image
-3. **Push** - Push image to ECR
-4. **Deploy** - Deploy to EC2 via SSH
+2. **Deploy** - SSH ke EC2 dan deploy
 
 ### Manual Deployment Script
 
@@ -281,33 +237,37 @@ cd /opt/ruangtes-api
 
 ```bash
 # Application logs
-docker-compose -f docker-compose.prod.yml logs -f app
+tail -f /opt/ruangtes-api/storage/logs/laravel.log
 
-# Queue logs
-docker-compose -f docker-compose.prod.yml logs -f queue
+# Queue worker logs
+tail -f /opt/ruangtes-api/storage/logs/queue-worker.log
 
 # Scheduler logs
-docker-compose -f docker-compose.prod.yml logs -f scheduler
+tail -f /opt/ruangtes-api/storage/logs/scheduler.log
 
 # Nginx logs
 sudo tail -f /var/log/nginx/ruangtes-access.log
 sudo tail -f /var/log/nginx/ruangtes-error.log
+
+# PHP-FPM logs
+sudo tail -f /var/log/php8.2-fpm.log
 ```
 
 ### Run Artisan Commands
 
 ```bash
-docker-compose -f docker-compose.prod.yml exec app php artisan <command>
+cd /opt/ruangtes-api
+php artisan <command>
 ```
 
 ### Database Backup
 
 ```bash
 # Backup database
-docker-compose -f docker-compose.prod.yml exec postgres pg_dump -U ruangtes ruangtes > backup_$(date +%Y%m%d_%H%M%S).sql
+sudo -u postgres pg_dump ruangtes > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Restore database
-docker-compose -f docker-compose.prod.yml exec -T postgres psql -U ruangtes ruangtes < backup.sql
+sudo -u postgres psql ruangtes < backup.sql
 ```
 
 ### Update Application
@@ -315,109 +275,159 @@ docker-compose -f docker-compose.prod.yml exec -T postgres psql -U ruangtes ruan
 ```bash
 cd /opt/ruangtes-api
 git pull origin main
-docker-compose -f docker-compose.prod.yml up -d --build
-docker-compose -f docker-compose.prod.yml exec app php artisan migrate --force
-docker-compose -f docker-compose.prod.yml exec app php artisan config:cache
-docker-compose -f docker-compose.prod.yml exec app php artisan route:cache
-docker-compose -f docker-compose.prod.yml restart queue scheduler
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+sudo systemctl reload php8.2-fpm
+sudo supervisorctl restart ruangtes-queue:*
 ```
 
-### Clean Up
+### Service Management
 
+#### PHP-FPM
 ```bash
-# Remove unused images
-docker image prune -af
+sudo systemctl status php8.2-fpm
+sudo systemctl restart php8.2-fpm
+sudo systemctl reload php8.2-fpm
+```
 
-# Remove unused volumes
-docker volume prune -f
+#### Nginx
+```bash
+sudo systemctl status nginx
+sudo systemctl restart nginx
+sudo systemctl reload nginx
+sudo nginx -t  # Test configuration
+```
 
-# Remove unused networks
-docker network prune -f
+#### Queue Workers
+```bash
+sudo supervisorctl status
+sudo supervisorctl restart ruangtes-queue:*
+sudo supervisorctl stop ruangtes-queue:*
+sudo supervisorctl start ruangtes-queue:*
+```
+
+#### Scheduler
+```bash
+sudo supervisorctl status ruangtes-scheduler
+sudo supervisorctl restart ruangtes-scheduler
+```
+
+#### PostgreSQL
+```bash
+sudo systemctl status postgresql
+sudo systemctl restart postgresql
+
+# Access database
+sudo -u postgres psql
+# Or
+psql -U ruangtes -d ruangtes
+```
+
+#### Redis
+```bash
+sudo systemctl status redis-server
+sudo systemctl restart redis-server
+
+# Test
+redis-cli ping
 ```
 
 ## Troubleshooting
 
 ### Container won't start
 
-```bash
-# Check logs
-docker-compose -f docker-compose.prod.yml logs app
-
-# Check container status
-docker-compose -f docker-compose.prod.yml ps
-
-# Restart containers
-docker-compose -f docker-compose.prod.yml restart
-```
+N/A - Tidak menggunakan Docker
 
 ### Database connection error
 
 ```bash
-# Check PostgreSQL container
-docker-compose -f docker-compose.prod.yml logs postgres
+# Check PostgreSQL status
+sudo systemctl status postgresql
 
 # Test connection
-docker-compose -f docker-compose.prod.yml exec app php artisan tinker
->>> DB::connection()->getPdo();
+psql -U ruangtes -d ruangtes -h 127.0.0.1
+
+# Check PostgreSQL logs
+sudo tail -f /var/log/postgresql/postgresql-*.log
 ```
 
 ### Redis connection error
 
 ```bash
-# Check Redis container
-docker-compose -f docker-compose.prod.yml logs redis
+# Check Redis status
+sudo systemctl status redis-server
 
 # Test connection
-docker-compose -f docker-compose.prod.yml exec app php artisan tinker
->>> Redis::ping();
+redis-cli ping
+
+# Check Redis logs
+sudo tail -f /var/log/redis/redis-server.log
 ```
 
 ### Permission errors
 
 ```bash
 # Fix storage permissions
-docker-compose -f docker-compose.prod.yml exec app chown -R www-data:www-data storage bootstrap/cache
-docker-compose -f docker-compose.prod.yml exec app chmod -R 775 storage bootstrap/cache
+sudo chown -R www-data:www-data /opt/ruangtes-api/storage
+sudo chown -R www-data:www-data /opt/ruangtes-api/bootstrap/cache
+sudo chmod -R 775 /opt/ruangtes-api/storage
+sudo chmod -R 775 /opt/ruangtes-api/bootstrap/cache
 ```
 
 ### Nginx 502 Bad Gateway
 
 ```bash
-# Check PHP-FPM container
-docker-compose -f docker-compose.prod.yml ps app
+# Check PHP-FPM status
+sudo systemctl status php8.2-fpm
+
+# Check PHP-FPM socket
+ls -la /var/run/php/php8.2-fpm.sock
 
 # Check Nginx error logs
 sudo tail -f /var/log/nginx/ruangtes-error.log
 
-# Restart containers
-docker-compose -f docker-compose.prod.yml restart app nginx
+# Restart PHP-FPM
+sudo systemctl restart php8.2-fpm
+sudo systemctl reload nginx
+```
+
+### Queue Workers Not Running
+
+```bash
+# Check Supervisor status
+sudo supervisorctl status
+
+# Reread and update
+sudo supervisorctl reread
+sudo supervisorctl update
+
+# Restart workers
+sudo supervisorctl restart ruangtes-queue:*
+
+# Check logs
+tail -f /opt/ruangtes-api/storage/logs/queue-worker.log
 ```
 
 ## Security Considerations
 
 1. **Environment Variables**: Jangan commit `.env` ke repository
 2. **Database Passwords**: Gunakan strong passwords
-3. **Redis Password**: Set Redis password
+3. **Redis**: Set password jika diperlukan (edit `/etc/redis/redis.conf`)
 4. **Firewall**: Hanya buka port yang diperlukan
 5. **SSL**: Selalu gunakan HTTPS di production
-6. **Updates**: Update sistem dan Docker images secara berkala
+6. **Updates**: Update sistem dan packages secara berkala
 
 ## Monitoring
 
 ### Health Check Endpoint
 
-Create health check endpoint:
+Health check endpoint tersedia di `/health`:
 
-```php
-// routes/web.php
-Route::get('/health', function () {
-    return response()->json([
-        'status' => 'ok',
-        'timestamp' => now(),
-        'database' => DB::connection()->getPdo() ? 'connected' : 'disconnected',
-        'redis' => Redis::ping() ? 'connected' : 'disconnected',
-    ]);
-});
+```bash
+curl https://api.ruangtes.web.id/health
 ```
 
 ### Setup Monitoring (Optional)
