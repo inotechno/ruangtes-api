@@ -32,7 +32,7 @@ RuangTes adalah SaaS aplikasi untuk psikotes online dengan arsitektur multi-tena
 ### Base URL
 
 ```
-Production: https://api.ruangtes.com/api
+Production: https://api.ruangtes.web.id/api
 Development: http://localhost:8000/api
 ```
 
