@@ -1,0 +1,92 @@
+{
+	"info": {
+		"_postman_id": "ruangtes-anticheat-collection",
+		"name": "RuangTes - Anti-Cheat System",
+		"description": "Anti-cheat detection endpoints for logging cheat events and viewing detections",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Log Cheat Event",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"detection_type\": \"tab_switch\",\n    \"detection_data\": {\n        \"timestamp\": \"2024-01-01T00:00:00Z\",\n        \"details\": \"User switched tabs\"\n    },\n    \"severity\": 2\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/test-session/{{session_token}}/cheat/log",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test-session",
+						"{{session_token}}",
+						"cheat",
+						"log"
+					]
+				},
+				"description": "Log a cheat event from frontend. Detection types: tab_switch, window_blur, keyboard_shortcut, right_click, copy_paste, time_anomaly, multiple_devices. Severity: 1-5 (5 = auto-ban)."
+			}
+		},
+		{
+			"name": "Get Cheat Detections",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/test-session/{{session_token}}/cheat/detections",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test-session",
+						"{{session_token}}",
+						"cheat",
+						"detections"
+					]
+				},
+				"description": "Get all cheat detections for a test session."
+			}
+		}
+	]
+}

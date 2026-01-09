@@ -1,0 +1,467 @@
+{
+	"info": {
+		"_postman_id": "ruangtes-company-management-collection",
+		"name": "RuangTes - Company Management",
+		"description": "Company, Admin, and Participant management endpoints for SuperAdmin",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Companies",
+			"item": [
+				{
+					"name": "List Companies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/companies?per_page=15&sort_by=created_at&sort_order=desc",
+							"host": ["{{base_url}}"],
+							"path": ["api", "companies"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Items per page"
+								},
+								{
+									"key": "sort_by",
+									"value": "created_at",
+									"description": "Sort by field"
+								},
+								{
+									"key": "sort_order",
+									"value": "desc",
+									"description": "Sort order (asc/desc)"
+								},
+								{
+									"key": "is_active",
+									"value": "",
+									"description": "Filter by active status (optional)",
+									"disabled": true
+								},
+								{
+									"key": "has_subscription",
+									"value": "",
+									"description": "Filter by subscription status (optional)",
+									"disabled": true
+								},
+								{
+									"key": "has_active_subscription",
+									"value": "",
+									"description": "Filter by active subscription (optional)",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search by name, email, or phone (optional)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get list of all companies with pagination and filtering. Includes counts for admins, participants, and subscriptions."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Company",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/companies/{{company_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "companies", "{{company_id}}"]
+						},
+						"description": "Get specific company by ID with admins, participants, and subscriptions"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Company",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('company_id', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"PT Contoh Perusahaan\",\n    \"email\": \"info@contoh.com\",\n    \"phone\": \"+62812345678\",\n    \"address\": \"Jl. Contoh No. 123, Jakarta\",\n    \"logo\": null,\n    \"settings\": {},\n    \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/companies",
+							"host": ["{{base_url}}"],
+							"path": ["api", "companies"]
+						},
+						"description": "Create a new company"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Company",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"PT Contoh Perusahaan Updated\",\n    \"email\": \"info@contoh.com\",\n    \"phone\": \"+62812345678\",\n    \"address\": \"Jl. Contoh No. 456, Jakarta\",\n    \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/companies/{{company_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "companies", "{{company_id}}"]
+						},
+						"description": "Update company information"
+					},
+					"response": []
+				},
+				{
+					"name": "Toggle Company Active Status",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/companies/{{company_id}}/toggle-active",
+							"host": ["{{base_url}}"],
+							"path": ["api", "companies", "{{company_id}}", "toggle-active"]
+						},
+						"description": "Toggle company active/inactive status"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Company",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/companies/{{company_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "companies", "{{company_id}}"]
+						},
+						"description": "Delete company (soft delete)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Company Admins",
+			"item": [
+				{
+					"name": "List Company Admins",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/companies/{{company_id}}/admins",
+							"host": ["{{base_url}}"],
+							"path": ["api", "companies", "{{company_id}}", "admins"]
+						},
+						"description": "Get list of all admins for a specific company"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Company Admin",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/company-admins/{{company_admin_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "company-admins", "{{company_admin_id}}"]
+						},
+						"description": "Get specific company admin by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Company Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('company_admin_id', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Admin Perusahaan\",\n    \"email\": \"admin@contoh.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"is_primary\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/companies/{{company_id}}/admins",
+							"host": ["{{base_url}}"],
+							"path": ["api", "companies", "{{company_id}}", "admins"]
+						},
+						"description": "Create a new admin for a company. Automatically creates User with tenant_admin role."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Company Admin",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Admin Perusahaan Updated\",\n    \"email\": \"admin@contoh.com\",\n    \"password\": \"newpassword123\",\n    \"password_confirmation\": \"newpassword123\",\n    \"is_primary\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/company-admins/{{company_admin_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "company-admins", "{{company_admin_id}}"]
+						},
+						"description": "Update company admin information"
+					},
+					"response": []
+				},
+				{
+					"name": "Set Admin as Primary",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/company-admins/{{company_admin_id}}/set-primary",
+							"host": ["{{base_url}}"],
+							"path": ["api", "company-admins", "{{company_admin_id}}", "set-primary"]
+						},
+						"description": "Set a company admin as primary. Automatically removes primary status from other admins in the same company."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Company Admin",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/company-admins/{{company_admin_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "company-admins", "{{company_admin_id}}"]
+						},
+						"description": "Delete company admin (also deletes associated User)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Company Participants",
+			"item": [
+				{
+					"name": "List Company Participants",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/companies/{{company_id}}/participants?per_page=15",
+							"host": ["{{base_url}}"],
+							"path": ["api", "companies", "{{company_id}}", "participants"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Items per page"
+								}
+							]
+						},
+						"description": "Get list of all participants for a specific company with pagination"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Company Participant",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/companies/{{company_id}}/participants/{{participant_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "companies", "{{company_id}}", "participants", "{{participant_id}}"]
+						},
+						"description": "Get specific participant by ID with test assignments and test sessions"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}
+

@@ -1,0 +1,316 @@
+{
+	"info": {
+		"_postman_id": "ruangtes-payment-verification-collection",
+		"name": "RuangTes - Payment Verification",
+		"description": "Payment verification endpoints for SuperAdmin",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get All Payments",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const response = pm.response.json();",
+							"    if (response.success && response.data && response.data.length > 0) {",
+							"        const firstPayment = response.data[0];",
+							"        if (firstPayment.id) {",
+							"            pm.environment.set('payment_id', firstPayment.id);",
+							"        }",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{super_admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/payments/all?per_page=15&status=pending",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"payments",
+						"all"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "15",
+							"description": "Number of items per page"
+						},
+						{
+							"key": "status",
+							"value": "pending",
+							"description": "Filter by status: pending, paid, failed, cancelled, refunded",
+							"disabled": true
+						},
+						{
+							"key": "method",
+							"value": "manual",
+							"description": "Filter by payment method",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Get all payments with optional filters:\n- `status`: Filter by payment status (pending, paid, failed, cancelled, refunded)\n- `method`: Filter by payment method (manual, etc.)\n- `per_page`: Number of items per page (default: 15)"
+			}
+		},
+		{
+			"name": "Get Pending Payments",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const response = pm.response.json();",
+							"    if (response.success && response.data && response.data.length > 0) {",
+							"        const firstPayment = response.data[0];",
+							"        if (firstPayment.id) {",
+							"            pm.environment.set('payment_id', firstPayment.id);",
+							"        }",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{super_admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/payments/pending",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"payments",
+						"pending"
+					]
+				},
+				"description": "Get list of all pending payments that need verification"
+			}
+		},
+		{
+			"name": "Get Payment Detail for Verification",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{super_admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/payments/{{payment_id}}/verify",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"payments",
+						"{{payment_id}}",
+						"verify"
+					]
+				},
+				"description": "Get payment detail for verification (includes payable information)"
+			}
+		},
+		{
+			"name": "Verify Payment (Approve)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Payment is verified', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.success && jsonData.data) {",
+							"        pm.expect(jsonData.data.status).to.equal('paid');",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{super_admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"payment_id\": {{payment_id}},\n    \"approved\": true,\n    \"notes\": \"Payment verified and approved\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/payments/verify",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"payments",
+						"verify"
+					]
+				},
+				"description": "Approve a pending payment. This will:\n- Update payment status to 'paid'\n- Activate subscription if payment is for subscription transaction\n- Mark invoice as paid if payment is for invoice\n- Send email notification to company admins"
+			}
+		},
+		{
+			"name": "Verify Payment (Reject)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Payment is rejected', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.success && jsonData.data) {",
+							"        pm.expect(jsonData.data.status).to.equal('failed');",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{super_admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"payment_id\": {{payment_id}},\n    \"approved\": false,\n    \"notes\": \"Payment proof tidak valid atau tidak sesuai\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/payments/verify",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"payments",
+						"verify"
+					]
+				},
+				"description": "Reject a pending payment. This will:\n- Update payment status to 'failed'\n- Send email notification to company admins with rejection reason"
+			}
+		}
+	]
+}

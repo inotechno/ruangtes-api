@@ -1,0 +1,597 @@
+{
+	"info": {
+		"_postman_id": "ruangtes-participant-management-collection",
+		"name": "RuangTes - Participant Management",
+		"description": "Participant management endpoints for TenantAdmin",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get All Participants",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const response = pm.response.json();",
+							"    if (response.success && response.data && response.data.length > 0) {",
+							"        const firstParticipant = response.data[0];",
+							"        if (firstParticipant.id) {",
+							"            pm.environment.set('participant_id', firstParticipant.id);",
+							"        }",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{tenant_admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/participants?per_page=15&search=&banned=false",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participants"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "15",
+							"description": "Number of items per page"
+						},
+						{
+							"key": "search",
+							"value": "",
+							"description": "Search by name or email",
+							"disabled": true
+						},
+						{
+							"key": "banned",
+							"value": "false",
+							"description": "Filter by banned status (true/false)",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Get list of all participants for the company with optional filters"
+			}
+		},
+		{
+			"name": "Create Participant with Test Assignments",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 201) {",
+							"    const response = pm.response.json();",
+							"    if (response.success && response.data && response.data.id) {",
+							"        pm.environment.set('participant_id', response.data.id);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{tenant_admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"test_ids\": [1, 2],\n    \"start_date\": \"2024-01-15 00:00:00\",\n    \"end_date\": \"2024-01-30 23:59:59\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/participants",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participants"
+					]
+				},
+				"description": "Create a new participant and assign tests with schedule in one transaction"
+			}
+		},
+		{
+			"name": "Get Participant Detail",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const response = pm.response.json();",
+							"    if (response.success && response.data && response.data.test_assignments && response.data.test_assignments.length > 0) {",
+							"        const firstAssignment = response.data.test_assignments[0];",
+							"        if (firstAssignment.id) {",
+							"            pm.environment.set('test_assignment_id', firstAssignment.id);",
+							"        }",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{tenant_admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/participants/{{participant_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participants",
+						"{{participant_id}}"
+					]
+				},
+				"description": "Get participant detail with test assignments and history"
+			}
+		},
+		{
+			"name": "Update Participant",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{tenant_admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"John Doe Updated\",\n    \"email\": \"john.doe.updated@example.com\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/participants/{{participant_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participants",
+						"{{participant_id}}"
+					]
+				},
+				"description": "Update participant information"
+			}
+		},
+		{
+			"name": "Delete Participant",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{tenant_admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/participants/{{participant_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participants",
+						"{{participant_id}}"
+					]
+				},
+				"description": "Delete a participant (will also delete test assignments)"
+			}
+		},
+		{
+			"name": "Preview Excel Import",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{tenant_admin_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": [],
+							"description": "Excel file with columns: name, email"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/participants/import-preview",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participants",
+						"import-preview"
+					]
+				},
+				"description": "Preview Excel import data before submitting. Returns valid and invalid rows with errors."
+			}
+		},
+		{
+			"name": "Import Participants from Excel",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{tenant_admin_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": [],
+							"description": "Excel file with columns: name, email"
+						},
+						{
+							"key": "test_ids",
+							"value": "[1, 2]",
+							"type": "text",
+							"description": "Array of test IDs to assign"
+						},
+						{
+							"key": "start_date",
+							"value": "2024-01-15 00:00:00",
+							"type": "text",
+							"description": "Assignment start date"
+						},
+						{
+							"key": "end_date",
+							"value": "2024-01-30 23:59:59",
+							"type": "text",
+							"description": "Assignment end date"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/participants/import",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participants",
+						"import"
+					]
+				},
+				"description": "Import participants from Excel and assign tests with schedule. File will be validated first, then valid participants will be created with test assignments."
+			}
+		},
+		{
+			"name": "Ban Participant",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{tenant_admin_token}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"reason\": \"Violation of test rules\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/participants/{{participant_id}}/ban",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participants",
+						"{{participant_id}}",
+						"ban"
+					]
+				},
+				"description": "Ban a participant (prevents access to tests)"
+			}
+		},
+		{
+			"name": "Unban Participant",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{tenant_admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/participants/{{participant_id}}/unban",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participants",
+						"{{participant_id}}",
+						"unban"
+					]
+				},
+				"description": "Unban a participant (restores access to tests)"
+			}
+		},
+		{
+			"name": "Resend Test Assignment Email",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const response = pm.response.json();",
+							"    if (response.success && response.data && response.data.id) {",
+							"        pm.environment.set('test_assignment_id', response.data.id);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{tenant_admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/test-assignments/{{test_assignment_id}}/resend-email",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test-assignments",
+						"{{test_assignment_id}}",
+						"resend-email"
+					]
+				},
+				"description": "Resend test assignment email for a specific assignment"
+			}
+		},
+		{
+			"name": "Resend All Assignment Emails for Participant",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{tenant_admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/participants/{{participant_id}}/resend-all-emails",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participants",
+						"{{participant_id}}",
+						"resend-all-emails"
+					]
+				},
+				"description": "Resend all test assignment emails for a participant (for all active assignments)"
+			}
+		}
+	]
+}

@@ -1,0 +1,402 @@
+{
+	"info": {
+		"_postman_id": "ruangtes-subscription-management-collection",
+		"name": "RuangTes - Subscription Management",
+		"description": "Subscription Plans and Prices management endpoints for SuperAdmin",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Subscription Plans",
+			"item": [
+				{
+					"name": "List Subscription Plans",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/subscription-plans?per_page=15&sort_by=sort_order&sort_order=asc&is_active=1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "subscription-plans"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Items per page"
+								},
+								{
+									"key": "sort_by",
+									"value": "sort_order",
+									"description": "Sort by field"
+								},
+								{
+									"key": "sort_order",
+									"value": "asc",
+									"description": "Sort order (asc/desc)"
+								},
+								{
+									"key": "is_active",
+									"value": "1",
+									"description": "Filter by active status (optional)"
+								},
+								{
+									"key": "duration_months",
+									"value": "",
+									"description": "Filter by duration: 3, 6, 12 (optional)",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search by name or description (optional)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get list of all subscription plans with pagination and filtering"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Subscription Plan",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/subscription-plans/{{subscription_plan_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "subscription-plans", "{{subscription_plan_id}}"]
+						},
+						"description": "Get specific subscription plan by ID with prices"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Subscription Plan",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('subscription_plan_id', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Paket 3 Bulan\",\n    \"duration_months\": 3,\n    \"description\": \"Paket berlangganan untuk 3 bulan\",\n    \"is_active\": true,\n    \"sort_order\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/subscription-plans",
+							"host": ["{{base_url}}"],
+							"path": ["api", "subscription-plans"]
+						},
+						"description": "Create a new subscription plan. Duration must be 3, 6, or 12 months."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Subscription Plan",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Paket 3 Bulan Updated\",\n    \"duration_months\": 3,\n    \"description\": \"Updated description\",\n    \"is_active\": true,\n    \"sort_order\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/subscription-plans/{{subscription_plan_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "subscription-plans", "{{subscription_plan_id}}"]
+						},
+						"description": "Update subscription plan"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Subscription Plan",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/subscription-plans/{{subscription_plan_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "subscription-plans", "{{subscription_plan_id}}"]
+						},
+						"description": "Delete subscription plan (soft delete)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Subscription Prices",
+			"item": [
+				{
+					"name": "List Prices for Plan",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/subscription-plans/{{subscription_plan_id}}/prices?per_page=15&sort_by=user_quota&sort_order=asc",
+							"host": ["{{base_url}}"],
+							"path": ["api", "subscription-plans", "{{subscription_plan_id}}", "prices"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Items per page"
+								},
+								{
+									"key": "sort_by",
+									"value": "user_quota",
+									"description": "Sort by field"
+								},
+								{
+									"key": "sort_order",
+									"value": "asc",
+									"description": "Sort order (asc/desc)"
+								},
+								{
+									"key": "is_active",
+									"value": "",
+									"description": "Filter by active status (optional)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get list of subscription prices for a specific plan with pagination"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Prices for Plan (Non-paginated)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/subscription-plans/{{subscription_plan_id}}/prices/all",
+							"host": ["{{base_url}}"],
+							"path": ["api", "subscription-plans", "{{subscription_plan_id}}", "prices", "all"]
+						},
+						"description": "Get all active prices for a plan (non-paginated, for dropdowns)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Subscription Price",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/subscription-prices/{{subscription_price_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "subscription-prices", "{{subscription_price_id}}"]
+						},
+						"description": "Get specific subscription price by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Subscription Price",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('subscription_price_id', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"subscription_plan_id\": {{subscription_plan_id}},\n    \"user_quota\": 5,\n    \"price\": 500000,\n    \"price_per_additional_user\": 50000,\n    \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/subscription-prices",
+							"host": ["{{base_url}}"],
+							"path": ["api", "subscription-prices"]
+						},
+						"description": "Create a new subscription price. user_quota = 0 means custom/unlimited. user_quota must be unique per plan."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Subscription Price",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"subscription_plan_id\": {{subscription_plan_id}},\n    \"user_quota\": 5,\n    \"price\": 600000,\n    \"price_per_additional_user\": 60000,\n    \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/subscription-prices/{{subscription_price_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "subscription-prices", "{{subscription_price_id}}"]
+						},
+						"description": "Update subscription price"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Subscription Price",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/subscription-prices/{{subscription_price_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "subscription-prices", "{{subscription_price_id}}"]
+						},
+						"description": "Delete subscription price"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}
+

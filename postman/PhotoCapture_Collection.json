@@ -1,0 +1,93 @@
+{
+	"info": {
+		"_postman_id": "ruangtes-photocapture-collection",
+		"name": "RuangTes - Photo Capture System",
+		"description": "Photo capture endpoints for capturing and viewing photos during test sessions",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Capture Photo",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "photo",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/test-session/{{session_token}}/photo/capture",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test-session",
+						"{{session_token}}",
+						"photo",
+						"capture"
+					]
+				},
+				"description": "Capture and store photo for test session. Photo format: jpg, jpeg, png. Max size: 2MB."
+			}
+		},
+		{
+			"name": "Get Photos",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/test-session/{{session_token}}/photos",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test-session",
+						"{{session_token}}",
+						"photos"
+					]
+				},
+				"description": "Get all photos captured during test session, ordered by capture time."
+			}
+		}
+	]
+}

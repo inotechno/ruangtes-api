@@ -1,0 +1,269 @@
+{
+	"info": {
+		"_postman_id": "ruangtes-transaction-collection",
+		"name": "RuangTes - Transactions",
+		"description": "Transaction endpoints for viewing transaction history and purchased tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Transaction History",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const response = pm.response.json();",
+							"    if (response.success && response.data && response.data.data && response.data.data.length > 0) {",
+							"        const firstTransaction = response.data.data[0];",
+							"        if (firstTransaction.id) {",
+							"            pm.environment.set('transaction_id', firstTransaction.id);",
+							"        }",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{public_user_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/transactions?status=&per_page=15",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"transactions"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "",
+							"description": "Filter by status: pending, processing, completed, failed, cancelled (optional)"
+						},
+						{
+							"key": "per_page",
+							"value": "15",
+							"description": "Items per page"
+						}
+					]
+				},
+				"description": "Get transaction history (with optional status filter)"
+			}
+		},
+		{
+			"name": "Get Transaction Details",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{public_user_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/transactions/{{transaction_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"transactions",
+						"{{transaction_id}}"
+					]
+				},
+				"description": "Get transaction details with items and payment info"
+			}
+		},
+		{
+			"name": "Get Purchased Tests",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{public_user_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/transactions/purchased-tests?per_page=15",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"transactions",
+						"purchased-tests"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "15",
+							"description": "Items per page"
+						}
+					]
+				},
+				"description": "Get list of purchased tests (only completed transactions)"
+			}
+		},
+		{
+			"name": "Get Payment for Transaction",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{public_user_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/transactions/{{transaction_id}}/payment",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"transactions",
+						"{{transaction_id}}",
+						"payment"
+					]
+				},
+				"description": "Get payment details for a transaction"
+			}
+		},
+		{
+			"name": "Upload Payment Proof",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{public_user_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "transaction_id",
+							"value": "{{transaction_id}}",
+							"type": "text"
+						},
+						{
+							"key": "proof_file",
+							"type": "file",
+							"src": []
+						},
+						{
+							"key": "notes",
+							"value": "Payment proof for transaction",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/transactions/{{transaction_id}}/payment/upload-proof",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"transactions",
+						"{{transaction_id}}",
+						"payment",
+						"upload-proof"
+					]
+				},
+				"description": "Upload payment proof for a transaction (payment will be auto-created if not exists)"
+			}
+		}
+	]
+}

@@ -1,0 +1,301 @@
+{
+	"info": {
+		"_postman_id": "ruangtes-participant-flow-collection",
+		"name": "RuangTes - Participant Flow (No Login)",
+		"description": "Participant flow endpoints - access via unique token from email (no authentication required)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Assignment by Token",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const response = pm.response.json();",
+							"    if (response.success && response.data) {",
+							"        const assignment = response.data.assignment;",
+							"        if (assignment && assignment.token) {",
+							"            pm.environment.set('assignment_token', assignment.token);",
+							"        }",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/participant/assignment/{{assignment_token}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participant",
+						"assignment",
+						"{{assignment_token}}"
+					]
+				},
+				"description": "Get assignment info by token (public endpoint, no auth required). Token is from email assignment link."
+			}
+		},
+		{
+			"name": "Get All Assignments",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/participant/assignments?token={{assignment_token}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participant",
+						"assignments"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{assignment_token}}",
+							"description": "Assignment token from email"
+						}
+					]
+				},
+				"description": "Get all assignments for participant (multi-test flow). Requires token in query parameter."
+			}
+		},
+		{
+			"name": "Check Biodata Status",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/participant/biodata/status?token={{assignment_token}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participant",
+						"biodata",
+						"status"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{assignment_token}}",
+							"description": "Assignment token"
+						}
+					]
+				},
+				"description": "Check if participant biodata is complete. Requires token in query parameter."
+			}
+		},
+		{
+			"name": "Complete Biodata",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"phone\": \"081234567890\",\n    \"date_of_birth\": \"1990-01-01\",\n    \"address\": \"Jl. Example No. 123\",\n    \"additional_info\": \"Additional information\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/participant/biodata/complete?token={{assignment_token}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participant",
+						"biodata",
+						"complete"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{assignment_token}}",
+							"description": "Assignment token"
+						}
+					]
+				},
+				"description": "Complete participant biodata. Requires token in query parameter."
+			}
+		},
+		{
+			"name": "Get Test Instructions",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/participant/instructions?token={{assignment_token}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participant",
+						"instructions"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{assignment_token}}",
+							"description": "Assignment token"
+						}
+					]
+				},
+				"description": "Get test instructions for assignment. Requires token in query parameter."
+			}
+		},
+		{
+			"name": "Start Test Session",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    const response = pm.response.json();",
+							"    if (response.success && response.data && response.data.session) {",
+							"        const session = response.data.session;",
+							"        if (session.session_token) {",
+							"            pm.environment.set('session_token', session.session_token);",
+							"        }",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/participant/session/start?token={{assignment_token}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"participant",
+						"session",
+						"start"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{{assignment_token}}",
+							"description": "Assignment token"
+						}
+					]
+				},
+				"description": "Start a new test session for participant. Requires token in query parameter. Auto-saves session_token to environment."
+			}
+		}
+	]
+}

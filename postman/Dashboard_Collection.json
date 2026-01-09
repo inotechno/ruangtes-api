@@ -1,0 +1,219 @@
+{
+	"info": {
+		"_postman_id": "ruangtes-dashboard-collection",
+		"name": "RuangTes - Dashboard",
+		"description": "Dashboard endpoints for SuperAdmin and TenantAdmin",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SuperAdmin Dashboard",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success field', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Response has data field', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"});",
+							"",
+							"if (pm.response.code === 200) {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.success && jsonData.data) {",
+							"        console.log('Dashboard Statistics:', JSON.stringify(jsonData.data, null, 2));",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{super_admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/dashboard",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"dashboard"
+					]
+				},
+				"description": "Get SuperAdmin dashboard statistics including:\n- Overview stats (companies, subscriptions, tests, users, test sessions)\n- Company statistics\n- Subscription statistics\n- Test statistics\n- User statistics\n- Test session statistics\n- Recent activities\n- Growth statistics"
+			},
+			"response": []
+		},
+		{
+			"name": "TenantAdmin Dashboard",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has success field', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('success');",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});",
+							"",
+							"pm.test('Response has data field', function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('data');",
+							"});",
+							"",
+							"pm.test('Response has company info', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.success && jsonData.data) {",
+							"        pm.expect(jsonData.data).to.have.property('company');",
+							"    }",
+							"});",
+							"",
+							"pm.test('Response has subscription info', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.success && jsonData.data) {",
+							"        pm.expect(jsonData.data).to.have.property('subscription');",
+							"    }",
+							"});",
+							"",
+							"pm.test('Response has overview stats', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.success && jsonData.data) {",
+							"        pm.expect(jsonData.data).to.have.property('overview');",
+							"    }",
+							"});",
+							"",
+							"pm.test('Response has participants stats', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.success && jsonData.data) {",
+							"        pm.expect(jsonData.data).to.have.property('participants');",
+							"    }",
+							"});",
+							"",
+							"pm.test('Response has test assignments stats', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.success && jsonData.data) {",
+							"        pm.expect(jsonData.data).to.have.property('test_assignments');",
+							"    }",
+							"});",
+							"",
+							"pm.test('Response has test sessions stats', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.success && jsonData.data) {",
+							"        pm.expect(jsonData.data).to.have.property('test_sessions');",
+							"    }",
+							"});",
+							"",
+							"pm.test('Response has recent activities', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.success && jsonData.data) {",
+							"        pm.expect(jsonData.data).to.have.property('recent_activities');",
+							"    }",
+							"});",
+							"",
+							"pm.test('Response has growth stats', function () {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.success && jsonData.data) {",
+							"        pm.expect(jsonData.data).to.have.property('growth');",
+							"    }",
+							"});",
+							"",
+							"if (pm.response.code === 200) {",
+							"    const jsonData = pm.response.json();",
+							"    if (jsonData.success && jsonData.data) {",
+							"        console.log('Company:', jsonData.data.company);",
+							"        console.log('Subscription:', jsonData.data.subscription);",
+							"        console.log('Overview:', jsonData.data.overview);",
+							"        console.log('Participants:', jsonData.data.participants);",
+							"        console.log('Test Assignments:', jsonData.data.test_assignments);",
+							"        console.log('Test Sessions:', jsonData.data.test_sessions);",
+							"        ",
+							"        // Save subscription info if available",
+							"        if (jsonData.data.subscription && jsonData.data.subscription.id) {",
+							"            pm.environment.set('subscription_id', jsonData.data.subscription.id);",
+							"        }",
+							"        ",
+							"        // Save company info if available",
+							"        if (jsonData.data.company && jsonData.data.company.id) {",
+							"            pm.environment.set('company_id', jsonData.data.company.id);",
+							"        }",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{tenant_admin_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/dashboard",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"dashboard"
+					]
+				},
+				"description": "Get TenantAdmin dashboard statistics for their company including:\n- Company information\n- Subscription status & quota usage\n- Overview statistics (participants, assignments, sessions)\n- Participant statistics (total, active, banned, new this month)\n- Test assignment statistics (completed, pending, active, expired)\n- Test session statistics (completed, in_progress, abandoned, banned)\n- Recent activities (participants, assignments, completed sessions)\n- Growth statistics (participants, assignments, sessions with growth percentage)"
+			},
+			"response": []
+		}
+	]
+}

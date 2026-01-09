@@ -1,0 +1,390 @@
+{
+	"info": {
+		"_postman_id": "ruangtes-test-management-collection",
+		"name": "RuangTes - Test Management",
+		"description": "Test Categories and Tests management endpoints for SuperAdmin",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Test Categories",
+			"item": [
+				{
+					"name": "List Test Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/test-categories?per_page=15&sort_by=sort_order&sort_order=asc&is_active=1",
+							"host": ["{{base_url}}"],
+							"path": ["api",  "test-categories"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Items per page"
+								},
+								{
+									"key": "sort_by",
+									"value": "sort_order",
+									"description": "Sort by field"
+								},
+								{
+									"key": "sort_order",
+									"value": "asc",
+									"description": "Sort order (asc/desc)"
+								},
+								{
+									"key": "is_active",
+									"value": "1",
+									"description": "Filter by active status (optional)"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search by name or description (optional)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get list of all test categories with pagination and filtering"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Test Category",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/test-categories/{{test_category_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api",  "test-categories", "{{test_category_id}}"]
+						},
+						"description": "Get specific test category by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Test Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('test_category_id', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Tes Kepribadian\",\n    \"description\": \"Kategori untuk tes kepribadian dan karakter\",\n    \"is_active\": true,\n    \"sort_order\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/test-categories",
+							"host": ["{{base_url}}"],
+							"path": ["api",  "test-categories"]
+						},
+						"description": "Create a new test category. Slug will be auto-generated from name."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Test Category",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Tes Kepribadian Updated\",\n    \"description\": \"Updated description\",\n    \"is_active\": true,\n    \"sort_order\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/test-categories/{{test_category_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api",  "test-categories", "{{test_category_id}}"]
+						},
+						"description": "Update test category. Slug will be auto-regenerated if name changes."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Test Category",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/test-categories/{{test_category_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api",  "test-categories", "{{test_category_id}}"]
+						},
+						"description": "Delete test category (soft delete)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tests",
+			"item": [
+				{
+					"name": "List Tests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tests?per_page=15&sort_by=sort_order&sort_order=asc&is_active=1",
+							"host": ["{{base_url}}"],
+							"path": ["api",  "tests"],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "15",
+									"description": "Items per page"
+								},
+								{
+									"key": "sort_by",
+									"value": "sort_order",
+									"description": "Sort by field"
+								},
+								{
+									"key": "sort_order",
+									"value": "asc",
+									"description": "Sort order (asc/desc)"
+								},
+								{
+									"key": "category_id",
+									"value": "",
+									"description": "Filter by category ID (optional)",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "",
+									"description": "Filter by type: public, company, all (optional)",
+									"disabled": true
+								},
+								{
+									"key": "is_active",
+									"value": "1",
+									"description": "Filter by active status (optional)"
+								},
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search by name, code, or description (optional)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get list of all tests with pagination and filtering"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Test",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tests/{{test_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api",  "tests", "{{test_id}}"]
+						},
+						"description": "Get specific test by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.success && jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set('test_id', jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"category_id\": 1,\n    \"name\": \"Tes MBTI\",\n    \"code\": \"MBTI001\",\n    \"price\": 50000,\n    \"question_count\": 50,\n    \"duration_minutes\": 60,\n    \"type\": \"all\",\n    \"description\": \"Tes kepribadian Myers-Briggs Type Indicator\",\n    \"instruction_route\": \"tests.mbti001.instructions\",\n    \"test_route\": \"tests.mbti001.take\",\n    \"metadata\": {},\n    \"is_active\": true,\n    \"sort_order\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tests",
+							"host": ["{{base_url}}"],
+							"path": ["api",  "tests"]
+						},
+						"description": "Create a new test. Type can be: public, company, or all"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Test",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"category_id\": 1,\n    \"name\": \"Tes MBTI Updated\",\n    \"code\": \"MBTI001\",\n    \"price\": 75000,\n    \"question_count\": 60,\n    \"duration_minutes\": 90,\n    \"type\": \"all\",\n    \"description\": \"Updated description\",\n    \"instruction_route\": \"tests.mbti001.instructions\",\n    \"test_route\": \"tests.mbti001.take\",\n    \"is_active\": true,\n    \"sort_order\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tests/{{test_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api",  "tests", "{{test_id}}"]
+						},
+						"description": "Update test. Use 'sometimes' validation - only include fields you want to update."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Test",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{super_admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tests/{{test_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api",  "tests", "{{test_id}}"]
+						},
+						"description": "Delete test (soft delete)"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}
+

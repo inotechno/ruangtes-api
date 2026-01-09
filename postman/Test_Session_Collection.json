@@ -1,0 +1,161 @@
+{
+	"info": {
+		"_postman_id": "ruangtes-test-session-collection",
+		"name": "RuangTes - Test Session Management",
+		"description": "Test session endpoints for managing test sessions (works for both Participant and Public User)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Session Details",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/test-session/{{session_token}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test-session",
+						"{{session_token}}"
+					]
+				},
+				"description": "Get test session details including answers, test info, and assignment info (if participant)."
+			}
+		},
+		{
+			"name": "Auto-Save Answers",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"answers\": {\n        \"question_1\": \"answer_1\",\n        \"question_2\": [\"option_a\", \"option_b\"],\n        \"question_3\": 5\n    }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/test-session/{{session_token}}/save-answers",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test-session",
+						"{{session_token}}",
+						"save-answers"
+					]
+				},
+				"description": "Auto-save answers periodically. Answers format: { question_id: answer_value }. Answer can be string, array, or number."
+			}
+		},
+		{
+			"name": "Submit Test",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/test-session/{{session_token}}/submit",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test-session",
+						"{{session_token}}",
+						"submit"
+					]
+				},
+				"description": "Submit test session. Marks session as completed and assignment as completed (if participant)."
+			}
+		},
+		{
+			"name": "Update Time Spent",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('base_url', 'http://localhost:8000');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/test-session/{{session_token}}/update-time",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test-session",
+						"{{session_token}}",
+						"update-time"
+					]
+				},
+				"description": "Update time spent (called periodically from frontend). Returns current time_spent_seconds."
+			}
+		}
+	]
+}
