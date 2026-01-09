@@ -20,7 +20,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.4'
           extensions: pdo, pdo_pgsql, pgsql, mbstring, exif, pcntl, bcmath, gd, zip, intl, opcache, xml, redis
           coverage: none
 
@@ -76,7 +76,7 @@ jobs:
             php artisan view:cache || true
             
             # Restart PHP-FPM
-            sudo systemctl reload php8.2-fpm || sudo systemctl reload php-fpm || true
+            sudo systemctl reload php8.4-fpm || sudo systemctl reload php-fpm || true
             
             # Restart queue worker (if using supervisor)
             sudo supervisorctl restart ruangtes-queue:* || true

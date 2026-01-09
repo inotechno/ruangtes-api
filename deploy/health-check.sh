@@ -41,7 +41,7 @@ if [ ! -w "storage" ]; then
 fi
 
 # Check services
-if ! systemctl is-active --quiet php8.2-fpm && ! systemctl is-active --quiet php-fpm; then
+if ! systemctl is-active --quiet php8.4-fpm && ! systemctl is-active --quiet php-fpm; then  
     echo "❌ PHP-FPM is not running"
     exit 1
 fi
